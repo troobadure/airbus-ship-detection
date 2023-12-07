@@ -1,0 +1,24 @@
+# Ignore Python cache files
+__pycache__/
+
+# Ignore model weights and checkpoints
+*.h5
+*.hdf5
+*.ckpt
+
+# Ignore log files
+*.log
+
+# Ignore generated files and directories
+output/
+results/
+
+# Ignore virtual environment
+venv/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore data files
+input/
+archive/
