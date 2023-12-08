@@ -14,3 +14,6 @@ env/
 # Ignore data files
 input/
 archive/
+
+# Test task
+Test task - Сomputer Vision (WT).docx

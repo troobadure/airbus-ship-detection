@@ -8,9 +8,7 @@ def double_conv(filters, dropout, input):
     return c
 
 def build_unet_model(filters=[16,32,64,128], dropouts=[0.1,0.1,0.2,0.2]):
-    # TODO: replace shape with config or new layer
     inputs = layers.Input((IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS))
-    # TODO: try adding gaussian
     normalized = layers.Lambda(lambda x: x / 255.0)(inputs)
 
     # downsample
@@ -35,7 +33,7 @@ def build_unet_model(filters=[16,32,64,128], dropouts=[0.1,0.1,0.2,0.2]):
 
     return models.Model(inputs=[inputs], outputs=[outputs])
 
-# TODO: change compile parameters
+# show summary
 if __name__ == '__main__':
     model = build_unet_model()
     from utils.losses import log_cosh_dice_loss, dice_coef

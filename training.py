@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
@@ -33,9 +32,7 @@ def main():
     validation_steps = min(validation_steps, MAX_VAL_STEPS)
     val_aug_gen = next(make_image_gen(val_df))
 
-    #TODO: changle loss, probably metric, and comment
-    #TODO: consider changing build_unet_model parameters
-    # create unet model with Adam optimizer and focal loss
+    # create unet model with Adam optimizer and log cosh dice loss
     unet_model = build_unet_model()
     unet_model.compile(
         optimizer=Adam(1e-4), loss=losses.log_cosh_dice_loss,
