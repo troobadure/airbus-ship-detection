@@ -13,6 +13,7 @@ from utils import losses
 from utils.preprocessing import get_masks_df
 from utils.rle import masks_as_color, multi_rle_encode
 
+# load and prepare dataframe with masks and image ids
 masks_df, balanced_df = get_masks_df()
 
 val_df = pd.merge(masks_df, balanced_df)
@@ -27,8 +28,8 @@ model = keras.models.load_model(
 # save some examples of model predictions
 def raw_prediction(img, path=TEST_DIR):
     img = imread(os.path.join(path, img_name))
-    img = np.expand_dims(img, 0)/255.0
-    cur_seg = model.predict(img, verbose = 0)[0] #TODO: remove [:, ::3,::3]
+    img = np.expand_dims(img, 0) / 255.0
+    cur_seg = model.predict(img, verbose = 0)[0]
     return cur_seg, img[0]
 
 def smooth(cur_seg):
@@ -59,33 +60,34 @@ for (ax1, ax2, ax3, ax4), img_name in zip(m_axs, samples.ImageId.values):
 fig.savefig('validation.png')
 
 # prepare submission
-test_paths = os.listdir(TEST_DIR)
+if GENERATE_SUBMISSION:
+    test_paths = os.listdir(TEST_DIR)
 
-def pred_encode(img, **kwargs):
-    cur_seg, _ = predict(img)
-    cur_rles = multi_rle_encode(cur_seg, **kwargs)
-    return [[img, rle] for rle in cur_rles if rle is not None]
+    def pred_encode(img, **kwargs):
+        cur_seg, _ = predict(img)
+        cur_rles = multi_rle_encode(cur_seg, **kwargs)
+        return [[img, rle] for rle in cur_rles if rle is not None]
 
-out_pred_rows = []
-for img_name in tqdm(test_paths):
-    out_pred_rows += pred_encode(img_name, min_max_threshold=1.0)
+    out_pred_rows = []
+    for img_name in tqdm(test_paths):
+        out_pred_rows += pred_encode(img_name, min_max_threshold=1.0)
 
-sub = pd.DataFrame(out_pred_rows)
-sub.columns = ['ImageId', 'EncodedPixels']
-sub.to_csv('submission.csv', index=False)
+    sub = pd.DataFrame(out_pred_rows)
+    sub.columns = ['ImageId', 'EncodedPixels']
+    sub.to_csv('submission.csv', index=False)
 
-## save some samples from the submission
-samples = val_df.groupby('ships').apply(lambda x: x.sample(1))
-TOP_PREDICTIONS = samples.shape[0]
-fig, m_axs = plt.subplots(TOP_PREDICTIONS, 2, figsize = (9, TOP_PREDICTIONS*5))
-[c_ax.axis('off') for c_ax in m_axs.flatten()]
+    ## save some samples from the submission
+    samples = val_df.groupby('ships').apply(lambda x: x.sample(1))
+    TOP_PREDICTIONS = samples.shape[0]
+    fig, m_axs = plt.subplots(TOP_PREDICTIONS, 2, figsize = (9, TOP_PREDICTIONS*5))
+    [c_ax.axis('off') for c_ax in m_axs.flatten()]
 
-for (ax1, ax2), img_name in zip(m_axs, sub.ImageId.unique()[:TOP_PREDICTIONS]):
-    img = imread(os.path.join(TEST_DIR, img_name))
-    img = np.expand_dims(img, 0)/255.0
-    ax1.imshow(img[0])
-    ax1.set_title('Image: ' + img_name)
-    ax2.imshow(masks_as_color(sub.query('ImageId=="{}"'.format(img_name))['EncodedPixels']))
-    ax2.set_title('Prediction')
+    for (ax1, ax2), img_name in zip(m_axs, sub.ImageId.unique()[:TOP_PREDICTIONS]):
+        img = imread(os.path.join(TEST_DIR, img_name))
+        img = np.expand_dims(img, 0) / 255.0
+        ax1.imshow(img[0])
+        ax1.set_title('Image: ' + img_name)
+        ax2.imshow(masks_as_color(sub.query('ImageId=="{}"'.format(img_name))['EncodedPixels']))
+        ax2.set_title('Prediction')
 
-fig.savefig('submission.png')
+    fig.savefig('submission.png')

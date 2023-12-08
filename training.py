@@ -13,6 +13,7 @@ from utils.preprocessing import get_masks_df
 from config import *
 
 def main():
+    # load and prepare dataframe with masks and image ids
     masks_df, balanced_df = get_masks_df()
 
     # split data into train and validation sets
