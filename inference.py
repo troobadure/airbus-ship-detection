@@ -57,7 +57,7 @@ for (ax1, ax2, ax3, ax4), img_name in zip(m_axs, samples.ImageId.values):
     ax4.imshow(ground_truth)
     ax4.set_title('Ground Truth')
     
-fig.savefig('validation.png')
+fig.savefig(os.path.join(OUTPUTS_DIR, 'validation.png'))
 
 # prepare submission
 if GENERATE_SUBMISSION:
@@ -74,7 +74,7 @@ if GENERATE_SUBMISSION:
 
     sub = pd.DataFrame(out_pred_rows)
     sub.columns = ['ImageId', 'EncodedPixels']
-    sub.to_csv('submission.csv', index=False)
+    sub.to_csv(os.path.join(OUTPUTS_DIR, 'submission.csv'), index=False)
 
     ## save some samples from the submission
     samples = val_df.groupby('ships').apply(lambda x: x.sample(1))
@@ -90,4 +90,4 @@ if GENERATE_SUBMISSION:
         ax2.imshow(masks_as_color(sub.query('ImageId=="{}"'.format(img_name))['EncodedPixels']))
         ax2.set_title('Prediction')
 
-    fig.savefig('submission.png')
+    fig.savefig(os.path.join(OUTPUTS_DIR, 'submission.png'))

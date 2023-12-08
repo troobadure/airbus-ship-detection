@@ -3,10 +3,11 @@ TRAIN_DIR = BASE_DIR + 'input/train_v2'
 TEST_DIR = BASE_DIR + 'input/test_v2'
 MASKS_PATH = BASE_DIR + 'input/train_ship_segmentations_v2.csv'
 
-BEST_MODEL_PATH="model_checkpoint.best.hdf5"
-FULLRES_MODEL_PATH="fullres_model.h5"
+BEST_MODEL_PATH="outputs/model_checkpoint.best.hdf5"
+FULLRES_MODEL_PATH="outputs/fullres_model.h5"
 
-LOAD_MODEL_PATH = 'fullres_model.h5'
+LOAD_MODEL_PATH = 'outputs/fullres_model.h5'
+OUTPUTS_DIR = 'outputs'
 GENERATE_SUBMISSION = False
 
 IMG_SCALING = (3, 3)
