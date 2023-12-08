@@ -6,6 +6,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import utils.rle as rle
 from config import *
 
+#TODO: check augmentations
 aug_args = dict(
     featurewise_center = False, 
     samplewise_center = False,
@@ -29,15 +30,6 @@ if AUGMENT_BRIGHTNESS:
 
 label_aug_gen = ImageDataGenerator(**aug_args)
 
-# TODO: remove
-# def gen_pred(test_dir, img, model):
-#     rgb_path = os.path.join(TEST_DIR,img)
-#     img = cv2.imread(rgb_path)
-#     img = tf.expand_dims(img, axis=0)
-#     pred = model.predict(img)
-#     pred = np.squeeze(pred, axis=0)
-#     return cv2.imread(rgb_path), pred
-
 # TODO: sort out BATCH_SIZE and IMG_SCALING usage
 def make_image_gen(input_df, batch_size=BATCH_SIZE):
     image_list = list(input_df.groupby('ImageId'))
@@ -54,19 +46,17 @@ def make_image_gen(input_df, batch_size=BATCH_SIZE):
             image_batch += [image]
             mask_batch += [mask]
             if len(image_batch)>=batch_size:
-                yield np.stack(image_batch, 0)/255.0, np.stack(mask_batch, 0).astype(np.float32)
+                yield np.stack(image_batch, 0), np.stack(mask_batch, 0).astype(np.float32)
                 image_batch, mask_batch=[], []
                 
 def make_aug_gen(input_generator, seed=None):
-    # TODO: delete this nonsense
-    np.random.seed(seed if seed is not None else np.random.choice(range(9999)))
     for x_batch, y_batch in input_generator:
-        batch_size, *_ = x_batch.shape
-        seed = np.random.choice(range(9999))
+        batch_size = x_batch.shape[0]
 
         # keep the seeds syncronized otherwise the augmentation to the images is different from the masks
+        seed = np.random.choice(range(9999))
         x_aug = image_aug_gen.flow(
-            255*x_batch, 
+            x_batch, 
             batch_size = batch_size, 
             seed = seed, 
             shuffle=True
@@ -77,4 +67,4 @@ def make_aug_gen(input_generator, seed=None):
             seed = seed, 
             shuffle=True)
 
-        yield next(x_aug)/255.0, next(y_aug)
+        yield next(x_aug), next(y_aug)

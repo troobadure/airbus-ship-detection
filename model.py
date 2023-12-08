@@ -1,5 +1,4 @@
-import tensorflow as tf
-import keras.layers as layers
+from keras import models, layers
 from config import *
 
 def double_conv(filters, dropout, input):
@@ -11,7 +10,7 @@ def double_conv(filters, dropout, input):
 def build_unet_model(filters=[16,32,64,128], dropouts=[0.1,0.1,0.2,0.2]):
     # TODO: replace shape with config or new layer
     inputs = layers.Input((IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS))
-    #TODO: check if normalization is still needed
+    # TODO: try adding gaussian
     normalized = layers.Lambda(lambda x: x / 255.0)(inputs)
 
     # downsample
@@ -34,10 +33,11 @@ def build_unet_model(filters=[16,32,64,128], dropouts=[0.1,0.1,0.2,0.2]):
     # final convolution
     outputs = layers.Conv2D(filters=1, kernel_size=(1,1), activation='sigmoid')(b)
 
-    return tf.keras.Model(inputs=[inputs], outputs=[outputs])
+    return models.Model(inputs=[inputs], outputs=[outputs])
 
 # TODO: change compile parameters
 if __name__ == '__main__':
     model = build_unet_model()
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    from utils.losses import log_cosh_dice_loss, dice_coef
+    model.compile(optimizer='adam', loss=log_cosh_dice_loss, metrics=[dice_coef])
     model.summary()

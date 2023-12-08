@@ -15,6 +15,7 @@ results/
 
 # Ignore virtual environment
 venv/
+env/
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/

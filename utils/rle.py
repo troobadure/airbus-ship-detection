@@ -1,11 +1,16 @@
 import numpy as np
+from skimage.morphology import label
 
 
-def rle_encode(img):
+def rle_encode(img, min_max_threshold=1e-3, max_mean_threshold=None):
     '''
     img: numpy array, 1 - mask, 0 - background
     Returns run length as string formated
     '''
+    if np.max(img) < min_max_threshold:
+        return '' # no need to encode if it's all zeros
+    if max_mean_threshold and np.mean(img) > max_mean_threshold:
+        return '' # ignore overfilled mask
     pixels = img.T.flatten() # T is needed to align to RLE direction
     pixels = np.concatenate([[0], pixels, [0]])
     runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
@@ -42,42 +47,18 @@ def combine_masks(img_masks, shape=(768, 768)):
 
     return np.expand_dims(all_masks, -1)
 
-# def multi_rle_encode(img):
-#     labels = label(img[:, :, 0])
-#     return [rle_encode(labels==k) for k in np.unique(labels[labels>0])]
+def masks_as_color(mask_list):
+    # take the individual ship masks and create a color mask array for each ships
+    all_masks = np.zeros((768, 768), dtype = np.float32)
+    scale = lambda x: (len(mask_list)+x+1) / (len(mask_list)*2) # scale the heatmap image to shift 
+    for i,mask in enumerate(mask_list):
+        if isinstance(mask, str):
+            all_masks[:,:] += scale(i) * rle_decode(mask)
+    return all_masks
 
-# demonstration
-if __name__ == '__main__':
-    import pandas as pd
-    from skimage.io import imread
-    import matplotlib.pyplot as plt
-    import os
-    print(os.listdir("input"))
-
-
-    train = os.listdir('input/train')
-    print(len(train))
-
-    test = os.listdir('input/test')
-    print(len(test))
-
-
-    masks = pd.read_csv('input/train_ship_segmentations.csv')
-    print(masks.head())
-
-
-    ImageId = '000155de5.jpg'
-
-    img = imread('input/train/' + ImageId)
-    all_masks = combine_masks(masks, ImageId)
-
-    fig, axarr = plt.subplots(1, 3, figsize=(15, 40))
-    axarr[0].axis('off')
-    axarr[1].axis('off')
-    axarr[2].axis('off')
-    axarr[0].imshow(img)
-    axarr[1].imshow(all_masks)
-    axarr[2].imshow(img)
-    axarr[2].imshow(all_masks, alpha=0.4)
-    plt.tight_layout(h_pad=0.1, w_pad=0.1)
-    plt.show()
+def multi_rle_encode(img, **kwargs):
+    labels = label(img)
+    if img.ndim > 2:
+        return [rle_encode(np.sum(labels==k, axis=2), **kwargs) for k in np.unique(labels[labels>0])]
+    else:
+        return [rle_encode(labels==k, **kwargs) for k in np.unique(labels[labels>0])]
