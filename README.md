@@ -1,4 +1,4 @@
-# Airbus Ship Detection using Tensorflow, U-Net and Dice
+# Airbus Ship Detection using Tensorflow, U-Net and Dice Score
 
 This repository is a solution for [Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).  
 It features U-Net deep neural network architecture modified with Dropout layers and variations of dice score used for loss and metrics.
